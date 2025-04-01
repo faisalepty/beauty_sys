@@ -1,0 +1,185 @@
+<!-- templates/3_home.html -->
+{% extends 'services/3_base.html' %}
+{% load static %}
+{% block title %}Home - Saumu Salim Barbershop & Spa{% endblock %}
+
+{% block content %}
+
+
+<!-- hero section -->
+
+
+
+  <!-- Welcome Section -->
+   <section class="welcome-section">
+    <div class="welcome-box" data-aos="fade-up" data-aos-duration="1000">
+        <h2 data-aos="fade-up" data-aos-delay="100" data-aos-duration="800">Welcome to</h2>
+        <h2 data-aos="fade-up" data-aos-delay="200" data-aos-duration="800" style="color: orange;"> Saumu Salim BarberShop & Spa </h2>
+        <p data-aos="fade-up" data-aos-delay="300" data-aos-duration="800">Indulge in expert grooming and rejuvenating spa treatments. Let us take care of you.</p>
+        <a href="#" class="welcome-btn" data-aos="fade-up" data-aos-delay="400" data-aos-duration="800">Discover More</a>
+    </div>
+</section>
+
+
+<!-- end welcome sec -->
+
+<!-- service section -->
+<section class="services-section">
+    <h2 data-aos="fade-down" data-aos-duration="1000">Featured Service categories</h2>
+ <div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-3 col-md-4 d-flex justify-content-center">
+            <div class="service-box" data-aos="fade-up" data-aos-delay="100" data-aos-duration="800">
+                <img src="https://i.pinimg.com/236x/46/0f/25/460f2595d9f70dfd67b4e5a71586753d.jpg" alt="Service 1">
+                <h3>Haircuts</h3>
+                <p>Precision haircuts for all styles and trends.</p>
+                <a href="/services/?category=haircut" class="service-btn haircuts-services">View Services</a>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-4 d-flex justify-content-center">
+            <div class="service-box" data-aos="fade-up" data-aos-delay="200" data-aos-duration="800">
+                <img src="https://i.pinimg.com/236x/5a/00/48/5a0048c3fe666df8a0466adcc6fc6ad6.jpg" alt="Service 2">
+                <h3>Massage</h3>
+                <p>Therapeutic and relaxing massages for stress relief.</p>
+                <a href="/services/?category=massage" class="service-btn massages-services">View Services</a>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-4 d-flex justify-content-center">
+            <div class="service-box" data-aos="fade-up" data-aos-delay="300" data-aos-duration="800">
+                <img src="https://i.pinimg.com/736x/e0/ec/ef/e0ecefe480e30037f4d19b8ce710c494.jpg" alt="Service 3">
+                <h3>Spa Treatments</h3>
+                <p>Relaxing facials, body scrubs, and wellness therapies.</p>
+                <a href="/services/?category=spa" class="service-btn spa-services">View Services</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+</section>
+<!-- end service sec -->
+<!-- testimonials sec -->
+<section class="testimonials-section">
+    <div class="testimonial-text" data-aos="fade-right" data-aos-duration="1000">
+        <h2>Testimonials</h2>
+        <p>See what our customers are saying about us.</p>
+    </div>
+    <div class="testimonial-container">
+        <div class="testimonial-wrapper" id="testimonial-wrapper">
+            <div class="testimonial-box" data-aos="fade-up" data-aos-delay="100" data-aos-duration="800">
+                <div class="stars">★ ★ ★ ★ ★</div>
+                <h4>Jess Kennedy</h4>
+                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+                <div class="position">Manager</div>
+            </div>
+            <div class="testimonial-box" data-aos="fade-up" data-aos-delay="200" data-aos-duration="800">
+                <div class="stars">★ ★ ★ ★</div>
+                <h4>Alex Johnson</h4>
+                <p>Great experience, very professional and skilled staff.</p>
+                <div class="position">Customer</div>
+            </div>
+            <div class="testimonial-box" data-aos="fade-up" data-aos-delay="300" data-aos-duration="800">
+                <div class="stars">★ ★ ★ ★ ★</div>
+                <h4>Emily Carter</h4>
+                <p>Absolutely love the service!</p>
+                <div class="position">Regular Client</div>
+            </div>
+        </div>
+        <div class="testimonial-nav">
+            <button class="t-nav-btn" onclick="prevTestimonial()">←</button>
+            <button class="t-nav-btn" onclick="nextTestimonial()">→</button>
+        </div>
+    </div>
+</section>
+<!-- end testimonials -->
+
+<!-- team section -->
+<section class="team-section">
+    <div class="container">
+        <h2 class="section-title" data-aos="fade-down" data-aos-duration="1000">Our Team</h2>
+        <div class="team-slider-container">
+            <button class="slider-btn prev-btn">←</button>
+            <div class="team-slider">
+                <div class="team-card" data-aos="fade-up" data-aos-delay="100" data-aos-duration="800">
+                    <img src="https://loremflickr.com/320/240" alt="Michael Wilson">
+                    <div class="team-info ps-2">
+                        <h4>Michael Wilson</h4>
+                        <p class="role">UX/UI DESIGNER</p>
+                    </div>
+                </div>
+                <div class="team-card" data-aos="fade-up" data-aos-delay="200" data-aos-duration="800">
+                    <img src="https://loremflickr.com/320/240" alt="Jane Smith">
+                    <div class="team-info ps-2">
+                        <h4>Jane Smith</h4>
+                        <p class="role">CEO</p>
+                    </div>
+                </div>
+                <div class="team-card" data-aos="fade-up" data-aos-delay="300" data-aos-duration="800">
+                    <img src="https://loremflickr.com/320/240" alt="John Doe">
+                    <div class="team-info ps-2">
+                        <h4>John Doe</h4>
+                        <p class="role">COO</p>
+                    </div>
+                </div>
+                <div class="team-card" data-aos="fade-up" data-aos-delay="400" data-aos-duration="800">
+                    <img src="https://loremflickr.com/320/240" alt="Laura Kim">
+                    <div class="team-info ps-2">
+                        <h4>Laura Kim</h4>
+                        <p class="role">PROJECT MANAGER</p>
+                    </div>
+                </div>
+            </div>
+            <button class="slider-btn next-btn">→</button>
+        </div>
+    </div>
+</section>
+<!-- end team sec -->
+
+<!-- map section -->
+    <section class="store-section">
+        <div class="store-container">
+            <div class="content">
+                <h2>We're open</h2>
+                <p>Welcome to our barbershop and spa! Indulge in premium haircuts, precision grooming, and soothing spa experiences designed to refresh and elevate your style. Visit us today and let’s embark on this journey of relaxation and transformation together.</p>
+            </div>
+            <div class="map">
+                <iframe 
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3988.775377845165!2d36.86965361475375!3d-1.212653635982365!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x182f3f16f73fcdd9%3A0xd015892b38793ea6!2sZeal%20Health%20and%20Fitness%20Centre!5e0!3m2!1sen!2sus!4v1698771234567!5m2!1sen!2sus" 
+                    width="100%" 
+                    height="400" 
+                    style="border:0;" 
+                    allowfullscreen="" 
+                    loading="lazy" 
+                    referrerpolicy="no-referrer-when-downgrade">
+                </iframe>
+            </div>
+        </div>
+    </section>
+<!-- endmap section -->
+
+<!-- contact section -->
+<section class="contact-section">
+    <div class="contact-wrapper">
+        <h2>Contacts</h2>
+        <div class="contact-grid">
+            <div class="contact-card" data-aos="fade-up" data-aos-delay="100" data-aos-duration="800">
+                <h3>Phone</h3>
+                <p><a href="tel:+254725201051">+254 725 201 051</a></p>
+            </div>
+            <div class="contact-card" data-aos="fade-up" data-aos-delay="200" data-aos-duration="800">
+                <h3>Email</h3>
+                <p><a href="mailto:saumusalim.co@gmail.com">saumusalim.co@gmail.com</a></p>
+            </div>
+            <div class="contact-card" data-aos="fade-up" data-aos-delay="300" data-aos-duration="800">
+                <h3>Address</h3>
+                <p>Zeal Health and Fitness Centre, Nairobi, Kenya</p>
+            </div>
+            <div class="contact-card hours-card" data-aos="fade-up" data-aos-delay="400" data-aos-duration="800">
+                <h3>Working Hours</h3>
+                <p>Mon - Sat: 8:00 AM - 9:00 PM</p>
+                <p class="sunday-note">Sundays: Only Early Bookings</p>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- end contact section -->
+{% endblock %}

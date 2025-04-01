@@ -1,0 +1,457 @@
+{% extends 'reports/base.html' %}
+
+{% block content %}
+<h2 class="dashboard-title">Service Sales</h2>
+<p class="dashboard-subtitle">Create and manage sales here</p>
+<div class="projects-orders-row">
+    <div class="projects-card">
+        <div class="table-header">
+            <h2>Sales</h2>
+            <p class="projects-subtitle">5 completed this month</p>
+            <!-- Add Sales Button -->
+            <button class="add-sales-btn" data-bs-toggle="modal" data-bs-target="#salesModal">
+                <i class="fas fa-plus"></i> Add Sale
+            </button>
+        </div>
+
+        <!-- Filter and Entries Dropdowns -->
+        <div class="dropdown-container">
+            <div class="filter-dropdown">
+                <button class="btn dropdown-toggle" type="button" id="paymentMethodFilterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="fas fa-filter"></i>
+                    <span id="paymentMethodFilterText">All Payment Methods</span>
+                </button>
+                <ul class="dropdown-menu status1" aria-labelledby="paymentMethodFilterDropdown">
+                    <li><a class="dropdown-item" href="#" data-value="">All Payment Methods</a></li>
+                    <li><a class="dropdown-item" href="#" data-value="mpesa">MPesa Only</a></li>
+                    <li><a class="dropdown-item" href="#" data-value="cash">Cash Only</a></li>
+                </ul>
+            </div>
+
+            <div class="entries-dropdown">
+                <button class="btn dropdown-toggle" type="button" id="entriesPerPageDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    Show: <span id="entriesPerPageText">10</span>
+                </button>
+                <ul class="dropdown-menu entries1" aria-labelledby="entriesPerPageDropdown">
+                    <li><a class="dropdown-item" href="#" data-value="10">10</a></li>
+                    <li><a class="dropdown-item" href="#" data-value="20">20</a></li>
+                    <li><a class="dropdown-item" href="#" data-value="30">30</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Table -->
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>DATE</th>
+                        <th>STAFF NAME</th>
+                        <th>SERVICE</th>
+                        <th>PAYMENT METHOD</th>
+                        <th>AMOUNT(ksh)</th>
+                        <th>COMPLETION</th>
+                        <th>ACTION</th>
+                    </tr>
+                </thead>
+                <tbody id="sales-table-body">
+                    {% for billing in billings %}
+                    <tr id="billing-row-{{ billing.id }}">
+                        <td>{{ billing.appointment.created_at }}</td>
+                        <td>{{ billing.appointment.staff.first_name }} {{ billing.appointment.staff.last_name }}</td>
+                        <td>{{ billing.payment_method }}</td>
+                        <td>{{ billing.amount_paid }}</td>
+                        
+                      <!-- Progress Bar Column -->
+<td>
+    <div class="progress-bar" style="width: {{ billing.completion_percentage }}%; 
+        {% if billing.status == 'completed' %}background-color: orange;
+        {% elif billing.status == 'transacted' %}background-color: green;
+        {% elif billing.status == 'confirmed' %}background-color: orange;
+        {% elif billing.status == 'cancelled' %}background-color: red;{% endif %}">
+    </div>
+</td>
+
+<!-- Action Buttons Column -->
+<td>
+    <div class="dropdown">
+        <button class="btn btn-link text-dark p-0" type="button" id="actionsDropdown{{ billing.id }}" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-ellipsis-h"></i>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="actionsDropdown{{ billing.id }}">
+            {% if billing.status == 'completed' %}
+            <li>
+                <a class="dropdown-item mark-transacted-link" href="#" data-id="{{ billing.id }}">
+                    <i class="fas fa-check-circle me-2"></i> Mark as Transacted
+                </a>
+            </li>
+            {% endif %}
+            <li>
+                <a class="dropdown-item edit-billing-link" href="#" data-id="{{ billing.id }}">
+                    <i class="fas fa-edit me-2"></i> Edit
+                </a>
+            </li>
+            <li>
+                <a class="dropdown-item delete-billing-link" href="#" data-id="{{ billing.id }}">
+                    <i class="fas fa-trash-alt me-2"></i> Delete
+                </a>
+            </li>
+        </ul>
+    </div>
+</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination Controls -->
+        <div class="pagination">
+            <button id="prev-page" disabled>Previous</button>
+            <span>Page <span id="current-page">{{ billings.number }}</span> of <span id="total-pages">{{ billings.paginator.num_pages }}</span></span>
+            <button id="next-page" disabled>Next</button>
+        </div>
+    </div>
+</div>
+
+
+<script type="text/javascript">
+//     document.addEventListener('DOMContentLoaded', function () {
+//     const serviceCheckboxes = document.querySelectorAll('.service-checkbox');
+//     const serviceDetailsContainer = document.getElementById('serviceDetailsContainer');
+
+//     // Dynamically add service details when checkboxes are selected
+//     serviceCheckboxes.forEach(checkbox => {
+//         checkbox.addEventListener('change', function () {
+//             serviceDetailsContainer.innerHTML = ''; // Clear previous fields
+
+//             Array.from(serviceCheckboxes)
+//                 .filter(checkbox => checkbox.checked)
+//                 .forEach((checkbox, index) => {
+//                     const serviceId = checkbox.value;
+//                     const serviceName = checkbox.nextElementSibling.textContent.trim();
+//                     const fixedPrice = parseFloat(checkbox.dataset.price);
+
+//                     fetch(`/billing/${serviceId}/additional-tasks/`)
+//                         .then(response => response.json())
+//                         .then(tasks => {
+//                             let additionalTaskFields = '';
+//                             tasks.tasks.forEach(task => {
+//                                 additionalTaskFields += `
+//                                     <div class="mb-2">
+//                                         <label>${task.name} Staff</label>
+//                                         <select class="form-select" name="task_${task.id}_staff_id">
+//                                             <option value="">Select Staff</option>
+//                                             {% for staff in staff_list %}
+//                                             <option value="{{ staff.id }}">{{ staff.first_name }} {{ staff.last_name }}</option>
+//                                             {% endfor %}
+//                                         </select>
+//                                     </div>
+//                                 `;
+//                             });
+
+//                             const accordionItem = `
+//                                 <div class="accordion" id="serviceAccordion-${serviceId}">
+//                                     <div class="accordion-item">
+//                                         <h2 class="accordion-header" id="heading-${serviceId}">
+//                                             <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-${serviceId}" aria-expanded="false" aria-controls="collapse-${serviceId}">
+//                                                 ${serviceName}
+//                                             </button>
+//                                         </h2>
+//                                         <div id="collapse-${serviceId}" class="accordion-collapse collapse" aria-labelledby="heading-${serviceId}" data-bs-parent="#serviceAccordion-${serviceId}">
+//                                             <div class="accordion-body">
+//                                                 <div class="mb-2">
+//                                                     <label>Fixed Price</label>
+//                                                     <input type="number" step="0.01" class="form-control fixed-price" value="${fixedPrice}" readonly>
+//                                                 </div>
+//                                                 <div class="mb-2">
+//                                                     <label>Amount Paid</label>
+//                                                     <input type="number" step="0.01" class="form-control amount-paid" value="${fixedPrice}" required>
+//                                                 </div>
+//                                                 <div class="mb-2">
+//                                                     <label>Discount</label>
+//                                                     <input type="number" step="0.01" class="form-control discount" value="0" readonly>
+//                                                 </div>
+//                                                 <div class="mb-2">
+//                                                     <label>Staff Member</label>
+//                                                     <select class="form-select service-staff" required>
+//                                                         <option value="">Select Staff</option>
+//                                                         {% for staff in staff_list %}
+//                                                         <option value="{{ staff.id }}">{{ staff.first_name }} {{ staff.last_name }}</option>
+//                                                         {% endfor %}
+//                                                     </select>
+//                                                 </div>
+//                                                 ${additionalTaskFields}
+//                                             </div>
+//                                         </div>
+//                                     </div>
+//                                 </div>
+//                             `;
+//                             serviceDetailsContainer.insertAdjacentHTML('beforeend', accordionItem);
+//                         });
+//                 });
+//         });
+//     });
+
+//     // Handle Save Button Click
+//     document.getElementById('saveSalesBtn').addEventListener('click', function () {
+//         const customerName = document.getElementById('walkinCustomerName').value;
+//         const additionalCharges = document.getElementById('additionalCharges').value || 0;
+
+//         const services = [];
+//         document.querySelectorAll('.accordion-body').forEach(field => {
+//             const serviceId = field.closest('.accordion-item').querySelector('.accordion-button').getAttribute('aria-controls').replace('collapse-', '');
+//             const fixedPrice = parseFloat(field.querySelector('.fixed-price').value);
+//             const amountPaid = parseFloat(field.querySelector('.amount-paid').value);
+//             const discount = parseFloat(field.querySelector('.discount').value);
+//             const staffId = field.querySelector('.service-staff').value;
+
+//             const serviceData = {
+//                 service_id: serviceId,
+//                 fixed_price: fixedPrice,
+//                 amount_paid: amountPaid,
+//                 discount: discount,
+//                 staff_id: staffId,
+//             };
+
+//             // Collect additional task staff assignments
+//             field.querySelectorAll('select[name^="task_"]').forEach(select => {
+//                 const taskId = select.name.split('_')[1];
+//                 const taskStaffId = select.value;
+//                 if (taskStaffId) {
+//                     serviceData[`task_${taskId}_staff_id`] = taskStaffId;
+//                 }
+//             });
+
+//             services.push(serviceData);
+//         });
+
+//         if (!customerName || services.length === 0) {
+//             alert('Please fill out all required fields.');
+//             return;
+//         }
+
+//         const payload = {
+//             customer_name: customerName,
+//             services: services,
+//             additional_charges: additionalCharges,
+//         };
+
+//         fetch('/billing/create-update/', {
+//             method: 'POST',
+//             headers: {
+//                 'Content-Type': 'application/json',
+//                 'X-CSRFToken': getCookie('csrftoken'),
+//             },
+//             body: JSON.stringify(payload),
+//         })
+//             .then(response => {
+//                 if (!response.ok) {
+//                     throw new Error('Network response was not ok');
+//                 }
+//                 return response.json();
+//             })
+//             .then(result => {
+//                 if (result.success) {
+//                     loadSales(currentPage, currentPaymentMethodFilter, entriesPerPage); // Reload the table
+//                     bootstrap.Modal.getInstance(document.getElementById('salesModal')).hide(); // Close modal
+//                     resetSalesForm(); // Reset the form after saving
+//                 } else {
+//                     console.error('Error saving sale:', result.error);
+//                 }
+//             })
+//             .catch(error => {
+//                 console.error('Error saving sale:', error);
+//             });
+//     });
+
+//     // Helper function to reset the form
+//     function resetSalesForm() {
+//         document.getElementById('salesForm').reset();
+//         document.getElementById('serviceDetailsContainer').innerHTML = '';
+//         serviceCheckboxes.forEach(checkbox => checkbox.checked = false);
+//     }
+
+//     // Helper function to get CSRF token from cookies
+//     function getCookie(name) {
+//         let cookieValue = null;
+//         if (document.cookie && document.cookie !== '') {
+//             const cookies = document.cookie.split(';');
+//             for (let i = 0; i < cookies.length; i++) {
+//                 const cookie = cookies[i].trim();
+//                 if (cookie.substring(0, name.length + 1) === (name + '=')) {
+//                     cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+//                     break;
+//                 }
+//             }
+//         }
+//         return cookieValue;
+//     }
+// });
+</script>
+
+<script type="text/javascript">
+// document.addEventListener('DOMContentLoaded', function () {
+//     const serviceCheckboxes = document.querySelectorAll('.service-checkbox');
+//     const serviceDetailsContainer = document.getElementById('serviceDetailsContainer');
+
+//     // Dynamically add service details when checkboxes are selected
+//     serviceCheckboxes.forEach(checkbox => {
+//         checkbox.addEventListener('change', function () {
+//             serviceDetailsContainer.innerHTML = ''; // Clear previous fields
+
+//             Array.from(serviceCheckboxes)
+//                 .filter(checkbox => checkbox.checked)
+//                 .forEach((checkbox, index) => {
+//                     const serviceId = checkbox.value;
+//                     const serviceName = checkbox.nextElementSibling.textContent.trim();
+//                     const fixedPrice = parseFloat(checkbox.dataset.price);
+
+//                     const accordionItem = `
+//                         <div class="accordion" id="serviceAccordion-${serviceId}">
+//                             <div class="accordion-item">
+//                                 <h2 class="accordion-header" id="heading-${serviceId}">
+//                                     <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-${serviceId}" aria-expanded="false" aria-controls="collapse-${serviceId}">
+//                                         ${serviceName}
+//                                     </button>
+//                                 </h2>
+//                                 <div id="collapse-${serviceId}" class="accordion-collapse collapse" aria-labelledby="heading-${serviceId}" data-bs-parent="#serviceAccordion-${serviceId}">
+//                                     <div class="accordion-body">
+//                                         <div class="mb-2">
+//                                             <label>Fixed Price</label>
+//                                             <input type="number" step="0.01" class="form-control fixed-price" value="${fixedPrice}" readonly>
+//                                         </div>
+//                                         <div class="mb-2">
+//                                             <label>Amount Paid</label>
+//                                             <input type="number" step="0.01" class="form-control amount-paid" value="${fixedPrice}" required>
+//                                         </div>
+//                                         <div class="mb-2">
+//                                             <label>Discount</label>
+//                                             <input type="number" step="0.01" class="form-control discount" value="0" readonly>
+//                                         </div>
+//                                         <div class="mb-2">
+//                                             <label>Staff Member</label>
+//                                             <select class="form-select service-staff" required>
+//                                                 <option value="">Select Staff</option>
+//                                                 {% for staff in staff_list %}
+//                                                 <option value="{{ staff.id }}">{{ staff.first_name }} {{ staff.last_name }}</option>
+//                                                 {% endfor %}
+//                                             </select>
+//                                         </div>
+//                                     </div>
+//                                 </div>
+//                             </div>
+//                         </div>
+//                     `;
+//                     serviceDetailsContainer.insertAdjacentHTML('beforeend', accordionItem);
+//                 });
+
+//             // Add event listeners for dynamic discount calculation
+//             document.querySelectorAll('.amount-paid').forEach(amountPaidInput => {
+//                 amountPaidInput.addEventListener('input', function () {
+//                     const parent = this.closest('.accordion-body');
+//                     const fixedPrice = parseFloat(parent.querySelector('.fixed-price').value);
+//                     const amountPaid = parseFloat(this.value) || 0;
+//                     const discount = fixedPrice - amountPaid;
+
+//                     parent.querySelector('.discount').value = discount.toFixed(2);
+//                 });
+//             });
+//         });
+//     });
+
+//     // Handle Save Button Click
+//     document.getElementById('saveSalesBtn').addEventListener('click', function () {
+//         const customerName = document.getElementById('walkinCustomerName').value;
+//         const additionalCharges = document.getElementById('additionalCharges').value || 0;
+
+//         const services = [];
+//         document.querySelectorAll('.accordion-body').forEach(field => {
+//             const serviceId = field.closest('.accordion-item').querySelector('.accordion-button').getAttribute('aria-controls').replace('collapse-', '');
+//             const fixedPrice = parseFloat(field.querySelector('.fixed-price').value);
+//             const amountPaid = parseFloat(field.querySelector('.amount-paid').value);
+//             const discount = parseFloat(field.querySelector('.discount').value);
+//             const staffId = field.querySelector('.service-staff').value;
+
+//             if (amountPaid && staffId) {
+//                 services.push({
+//                     service_id: serviceId,
+//                     fixed_price: fixedPrice,
+//                     amount_paid: amountPaid,
+//                     discount: discount,
+//                     staff_id: staffId,
+//                 });
+//             }
+//         });
+
+//         if (!customerName || services.length === 0) {
+//             alert('Please fill out all required fields.');
+//             return;
+//         }
+
+//         const payload = {
+//             customer_name: customerName,
+//             services: services,
+//             additional_charges: additionalCharges,
+//         };
+
+//         fetch('/billing/create-update/', {
+//             method: 'POST',
+//             headers: {
+//                 'Content-Type': 'application/json',
+//                 'X-CSRFToken': getCookie('csrftoken'),
+//             },
+//             body: JSON.stringify(payload),
+//         })
+//             .then(response => {
+//                 if (!response.ok) {
+//                     throw new Error('Network response was not ok');
+//                 }
+//                 return response.json();
+//             })
+//             .then(result => {
+//                 if (result.success) {
+//                     loadSales(currentPage, currentPaymentMethodFilter, entriesPerPage); // Reload the table
+//                     bootstrap.Modal.getInstance(document.getElementById('salesModal')).hide(); // Close modal
+//                     resetSalesForm(); // Reset the form after saving
+//                 } else {
+//                     console.error('Error saving sale:', result.error);
+//                 }
+//             })
+//             .catch(error => {
+//                 console.error('Error saving sale:', error);
+//             });
+//     });
+
+//     // Helper function to reset the form
+//     function resetSalesForm() {
+//         document.getElementById('salesForm').reset();
+//         document.getElementById('serviceDetailsContainer').innerHTML = '';
+//         serviceCheckboxes.forEach(checkbox => checkbox.checked = false);
+//     }
+
+//     // Helper function to get CSRF token from cookies
+//     function getCookie(name) {
+//         let cookieValue = null;
+//         if (document.cookie && document.cookie !== '') {
+//             const cookies = document.cookie.split(';');
+//             for (let i = 0; i < cookies.length; i++) {
+//                 const cookie = cookies[i].trim();
+//                 if (cookie.substring(0, name.length + 1) === (name + '=')) {
+//                     cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+//                     break;
+//                 }
+//             }
+//         }
+//         return cookieValue;
+//     }
+// });
+</script>
+{% endblock %}
+
+
+
+
+
+
+
