@@ -501,7 +501,7 @@ def dashboard(request):
     ).aggregate(total=Sum('total'))['total'] or 0
     todays_profit = round(Decimal(todays_revenue) * Decimal('0.6'), 2) if todays_revenue else 0
     appointments_today = Appointment.objects.filter(
-        created_at__range=(start_of_day, end_of_day)
+        created_at__range=(start_of_day, end_of_day), appointment__status='transacted'
     ).count()
 
     yesterdays_revenue = Billing.objects.filter(
