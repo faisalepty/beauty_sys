@@ -1,6 +1,9 @@
 <!-- reports/expense_list.html -->
 {% extends 'reports/base.html' %}
 {% block content %}
+
+<h2 class="dashboard-title">Team Members</h2>
+<p class="dashboard-subtitle">List of your employees</p>
 <div class="projects-orders-row">
     <div class="projects-card">
         <div class="table-header">
@@ -77,7 +80,7 @@ document.addEventListener('DOMContentLoaded', function () {
         })
             .then(response => response.json())
             .then(data => {
-                console.log(data)
+                
                 // Update table body
                 tableBody.innerHTML = '';
                 data.expenses.forEach(expense => {
