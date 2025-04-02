@@ -1,0 +1,209 @@
+<!-- reports/expense_list.html -->
+{% extends 'reports/base.html' %}
+{% block content %}
+<div class="projects-orders-row">
+    <div class="projects-card">
+        <div class="table-header">
+            <h2>Expenses</h2>
+            <button class="add-expense-btn" data-bs-toggle="modal" data-bs-target="#addExpenseModal">
+                <i class="fas fa-plus"></i> Add Expense
+            </button>
+        </div>
+        <div class="dropdown-container">
+            <div class="filter-dropdown">
+                <button class="btn dropdown-toggle" type="button" id="categoryFilterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="fas fa-filter"></i>
+                    <span id="categoryFilterText">All Categories</span>
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="categoryFilterDropdown">
+                    <li><a class="dropdown-item filter-option" href="#" data-value="">All Categories</a></li>
+                    {% for category in categories %}
+                    <li><a class="dropdown-item filter-option" href="#" data-value="{{ category.id }}">{{ category.name }}</a></li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div class="entries-dropdown">
+                <label for="entriesPerPage">Show:</label>
+                <select id="entriesPerPage" class="form-select">
+                    <option value="10">10</option>
+                    <option value="20">20</option>
+                    <option value="30">30</option>
+                </select>
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Category</th>
+                        <th>Amount</th>
+                        <th>Date</th>
+                        <th>Description</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="expenseTableBody">
+                    <!-- Rows will be dynamically populated -->
+                </tbody>
+            </table>
+        </div>
+        <div class="pagination">
+            <button id="prevPageBtn">Previous</button>
+            <span id="pageInfo">Page <span id="currentPage">1</span> of <span id="totalPages">1</span></span>
+            <button id="nextPageBtn">Next</button>
+        </div>
+    </div>
+</div>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const tableBody = document.getElementById('expenseTableBody');
+    const prevPageBtn = document.getElementById('prevPageBtn');
+    const nextPageBtn = document.getElementById('nextPageBtn');
+    const pageInfo = document.getElementById('pageInfo');
+    const currentPageSpan = document.getElementById('currentPage');
+    const totalPagesSpan = document.getElementById('totalPages');
+    const entriesPerPageSelect = document.getElementById('entriesPerPage');
+    let currentPage = 1;
+    let entriesPerPage = 10;
+    let categoryFilter = '';
+
+    // Function to fetch and render expenses
+    function fetchExpenses() {
+        fetch(`/expense/list/?category=${categoryFilter}&page=${currentPage}&entries=${entriesPerPage}`, {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data)
+                // Update table body
+                tableBody.innerHTML = '';
+                data.expenses.forEach(expense => {
+                    const row = `
+                        <tr>
+                            <td>${expense.category}</td>
+                            <td>ksh${expense.amount}</td>
+                            <td>${expense.start_date}</td>
+                            <td>${expense.description || ''}</td>
+                            <td>${expense.is_paid ? 'Paid' : 'Unpaid'}</td>
+                            <td>
+                                <div class="dropdown">
+                                    <button class="btn btn-link text-dark p-0" type="button" id="actionsDropdown${expense.id}" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="fas fa-ellipsis-h"></i>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="actionsDropdown${expense.id}">
+                                        <li>
+                                            <a class="dropdown-item edit-expense-link" href="#" data-id="${expense.id}">
+                                                <i class="fas fa-edit me-2"></i> Edit
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item delete-expense-link" href="#" data-id="${expense.id}">
+                                                <i class="fas fa-trash-alt me-2"></i> Delete
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                    tableBody.insertAdjacentHTML('beforeend', row);
+                });
+
+                // Update pagination info
+                currentPageSpan.textContent = data.pagination.current_page;
+                totalPagesSpan.textContent = data.pagination.total_pages;
+                prevPageBtn.disabled = !data.pagination.has_previous;
+                nextPageBtn.disabled = !data.pagination.has_next;
+            });
+    }
+
+    // Event listeners for pagination buttons
+    prevPageBtn.addEventListener('click', () => {
+        if (currentPage > 1) {
+            currentPage--;
+            fetchExpenses();
+        }
+    });
+
+    nextPageBtn.addEventListener('click', () => {
+        currentPage++;
+        fetchExpenses();
+    });
+
+    // Event listener for entries per page dropdown
+    entriesPerPageSelect.addEventListener('change', () => {
+        entriesPerPage = parseInt(entriesPerPageSelect.value);
+        currentPage = 1; // Reset to first page
+        fetchExpenses();
+    });
+
+    // Event listeners for filter options
+    document.querySelectorAll('.filter-option').forEach(option => {
+        option.addEventListener('click', (e) => {
+            e.preventDefault();
+            categoryFilter = e.target.dataset.value;
+            currentPage = 1; // Reset to first page
+            fetchExpenses();
+        });
+    });
+
+    // Initial fetch
+    fetchExpenses();
+
+    // Handle Save Button Click
+    document.getElementById('saveExpenseBtn').addEventListener('click', function () {
+        const form = document.getElementById('expenseForm');
+        const formData = new FormData(form);
+        const payload = Object.fromEntries(formData.entries());
+
+        fetch('/expense/create-update/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify(payload)
+        })
+        .then(response => response.json())
+        .then(result => {
+            if (result.success) {
+                location.reload(); // Reload the page after saving
+            } else {
+                console.error('Error saving expense:', result.error);
+            }
+        })
+        .catch(error => console.error('Error saving expense:', error));
+    });
+
+    // Handle Delete Link Click
+    tableBody.addEventListener('click', function (e) {
+        if (e.target.classList.contains('delete-expense-link')) {
+            e.preventDefault();
+            if (confirm('Are you sure you want to delete this expense?')) {
+                const expenseId = e.target.getAttribute('data-id');
+                fetch('/expense/delete/', {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify({ id: expenseId }),
+                })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        fetchExpenses(); // Refresh the table
+                    } else {
+                        console.error('Error deleting expense:', result.error);
+                    }
+                })
+                .catch(error => console.error('Error deleting expense:', error));
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

@@ -1112,6 +1112,19 @@ body.dark-mode .dropdown-menu {
         color: gray;
     }
 </style>
+  <script>
+document.addEventListener("DOMContentLoaded", function() {
+    flatpickr("#start_date", { 
+        enableTime: false, 
+        dateFormat: "Y-m-d"  // YYYY-MM-DD format
+    });
+
+    flatpickr("#end_date", { 
+       enableTime: false, 
+        dateFormat: "Y-m-d"  // YYYY-MM-DD format
+    });
+});
+</script>
 <body>
  <!-- Top Navbar -->
     <nav class="top-navbar">
@@ -1217,6 +1230,69 @@ body.dark-mode .dropdown-menu {
         </div> -->
     </footer>
 </main>
+
+
+<!-- Modal for Adding/Editing Expenses -->
+<div class="modal fade" id="addExpenseModal" tabindex="-1" aria-labelledby="addExpenseModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addExpenseModalLabel">Add Expense</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="expenseForm">
+                    <input type="hidden" id="expenseId" name="id">
+                    <div class="mb-3">
+                        <label for="category" class="form-label">Category</label>
+                        <select class="form-select" id="category" name="category_id" required>
+                            {% for category in categories %}
+                            <option value="{{ category.id }}">{{ category.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="amount" class="form-label">Amount</label>
+                        <input type="number" step="0.01" class="form-control" id="amount" name="amount" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="start_date" class="form-label">Start Date</label>
+                        <input type="date" class="form-control" id="start_date" name="start_date" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="end_date" class="form-label">End Date (Optional)</label>
+                        <input type="date" class="form-control" id="end_date" name="end_date">
+                    </div>
+                    <div class="mb-3">
+                        <label for="recurring_frequency" class="form-label">Recurring Frequency</label>
+                        <select class="form-select" id="recurring_frequency" name="recurring_frequency">
+                            <option value="NONE">None</option>
+                            <option value="DAILY">Daily</option>
+                            <option value="WEEKLY">Weekly</option>
+                            <option value="MONTHLY">Monthly</option>
+                            <option value="YEARLY">Yearly</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="is_paid" class="form-label">Paid?</label>
+                        <select class="form-select" id="is_paid" name="is_paid">
+                            <option value="False">Unpaid</option>
+                            <option value="True">Paid</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control" id="description" name="description"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="saveExpenseBtn">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <!-- Notifications Modal -->
 <div class="modal fade" id="notificationsModal" tabindex="-1" aria-labelledby="notificationsModalLabel" aria-hidden="true">
