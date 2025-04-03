@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Appointment Notification</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f7f7f7;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        .email-container {
+            background-color: #ffffff;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .email-header {
+            font-size: 24px;
+            font-weight: bold;
+            color: #293889;
+            text-align: center;
+        }
+        .email-content {
+            margin-top: 20px;
+            font-size: 16px;
+            line-height: 1.5;
+        }
+        .button {
+            display: inline-block;
+            background-color: black;
+            color: white;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        .footer {
+            margin-top: 30px;
+            font-size: 12px;
+            color: #888;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="email-header">
+            New Appointment Booked
+        </div>
+        <div class="email-content">
+            <p>Dear Staff,</p>
+            <p>A new appointment has been booked by {{ customer_name }} for the service: <strong>{{ service_name }}</strong> on <strong>{{ appointment_date }}</strong>.</p>
+            <p>Please log in to your dashboard for more details and manage your appointments.</p>
+            <a href="{{ dashboard_url }}" class="button">Go to Dashboard</a>
+        </div>
+        <div class="footer">
+            <p>Thank you for your dedication and hard work!</p>
+        </div>
+    </div>
+</body>
+</html>

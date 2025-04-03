@@ -7,6 +7,11 @@ from .models import Appointment
 from services.models import Service
 from staff.models import Staff
 from customers.models import Customer
+from django.urls import reverse
+from django.core.mail import send_mail
+from django.conf import settings
+from django.template.loader import render_to_string
+
 
 def home(request):
     services = Service.objects.all()[:3]
@@ -164,6 +169,41 @@ def book_appointment(request):
             message1 = "Book as a registered user to earn and redeem loyalty points!"
             loyalty_points_earned = message1
         total_cost = service.price
+
+
+        dashboard_url = 'https://saumusalimbarbershopspa.pythonanywhere.com/billing/staff-dashboard/'  # Replace with the actual URL
+
+        if appointment.service.category in ["haircut"]:  # For haircut, notify barbers
+            barbers = Staff.objects.filter(role="barber")  # Get barbers
+            staff_emails = [barber.user.email for barber in barbers]
+        elif appointment.service.category in ["spa", "massage"]:  # For spa and massage, notify masseuses
+            masseuses = Staff.objects.filter(role="masseuse")  # Get masseuses
+            staff_emails = [masseuse.user.email for masseuse in masseuses]
+        else:
+            staff_emails = []
+
+        # Send HTML email to the relevant staff
+        if staff_emails:
+            subject = f"New Appointment Booked: {appointment.service.name}"
+
+            # Render the HTML email content with the relevant context
+            html_message = render_to_string('emails/new_appointment.html', {
+                'customer_name': f"{customer.first_name} {customer.last_name}",
+                'service_name': appointment.service.name,
+                'appointment_date': appointment.appointment_date.strftime("%Y-%m-%d at %H:%M"),
+                'dashboard_url': dashboard_url
+            })
+
+            # Send the email
+            send_mail(
+                subject,
+                'This is a plain text message.',  # Optional: For email clients that don’t render HTML
+                settings.EMAIL_HOST_USER,
+                staff_emails,
+                html_message=html_message
+            )
+            print('mailsent')
+
 
         return JsonResponse({
             'success': True,

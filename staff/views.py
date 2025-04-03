@@ -13,6 +13,18 @@ from appointments.models import Appointment
 from django.contrib.auth.decorators import login_required
 # staff/views.py
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.core.mail import send_mail
+from django.http import HttpResponse
+
+def send_simple_email(request):
+    subject = "Test Email from Django"
+    message = "This is a test email from Django!"
+    from_email = "saumusalim.co@gmail.com"  # Must match `EMAIL_HOST_USER`
+    recipient_list = ["jojomadready@gmail.com"]  # Add the recipient email here
+
+    send_mail(subject, message, from_email, recipient_list)
+    return HttpResponse("Email sent successfully!")
+
 
 
 def staff_detail(request, pk):

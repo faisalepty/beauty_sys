@@ -19,6 +19,7 @@ urlpatterns = [
     path('notifications/', views.staff_notifications, name='staff_notifications'),
       path('mark-confirmed/<int:appointment_id>/', views.mark_confirmed, name='mark_confirmed'),
     path('get-appointment-details/<int:appointment_id>/', views.get_appointment_details, name='get_appointment_details'),
+    path('send-email/', views.send_simple_email, name='send_email'),
 
 
 ]

@@ -142,6 +142,17 @@ MPESA_SHORTCODE = config('MPESA_SHORTCODE')
 MPESA_PASSKEY = config('MPESA_PASSKEY')
 MPESA_SHORTCODE_TYPE = config('MPESA_SHORTCODE_TYPE')
 
+
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'  # Gmail SMTP server
+EMAIL_PORT = 587  # TLS Port for Gmail
+EMAIL_USE_TLS = True  # Use TLS for security
+EMAIL_HOST_USER = 'saumusalim.co@gmail.com'  # Your Gmail email address
+EMAIL_HOST_PASSWORD = 'rati wugg xndi oiqh'  # Use your email's app password
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER  # Default sender email
+
+
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
