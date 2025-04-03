@@ -42,11 +42,19 @@
         <i class="fas fa-shopping-bag metric-icon"></i>
     </div>
     <div class="metric-card col-lg-3">
-        <h2>Total revenue</h2>
-        <p class="metric-value">Ksh {{ total_revenue }}</p>
-        <p class="metric-change" style="color: grey; margin-bottom: 0; text-align: left;">All revenue </p>
-        <i class="fas fa-money-bill-alt metric-icon"></i>
-    </div>
+    <h2>Paid Expenses (Current Month)</h2>
+    <p class="metric-value">Ksh {{ current_month_paid_expenses }}</p>
+    <p class="metric-change {% if paid_expenses_change > 0 %}positive{% elif paid_expenses_change < 0 %}negative{% else %}neutral{% endif %}">
+        {% if paid_expenses_change > 0 %}
+            +{{ paid_expenses_change }}% more than last month
+        {% elif paid_expenses_change < 0 %}
+            {{ paid_expenses_change_abs }}% less than last month
+        {% else %}
+            Same as last month
+        {% endif %}
+    </p>
+    <i class="fas fa-check-circle metric-icon"></i>
+</div>
     <div class="metric-card col-lg-3">
         <h2>Current Month revenue</h2>
         <p class="metric-value">Ksh {{ current_month_revenue }}</p>
@@ -78,11 +86,19 @@
         <i class="fas fa-calendar-alt fas fa-shopping-bag metric-icon"></i>
     </div>
     <div class="metric-card col-lg-3">
-        <h2>Total sales</h2>
-        <p class="metric-value">{{ total_appointments }}</p>
-        <p class="metric-change" style="color: grey; margin-bottom: 0; text-align: left;">Clients Served</p>
-        <i class="fas fa-users metric-icon"></i>
-    </div>
+    <h2>Total Expenses (Current Month)</h2>
+    <p class="metric-value">Ksh {{ total_current_month_expenses }}</p>
+    <p class="metric-change {% if total_expenses_change > 0 %}positive{% elif total_expenses_change < 0 %}negative{% else %}neutral{% endif %}">
+        {% if total_expenses_change > 0 %}
+            +{{ total_expenses_change }}% more than last month
+        {% elif total_expenses_change < 0 %}
+            {{ total_expenses_change_abs }}% less than last month
+        {% else %}
+            Same as last month
+        {% endif %}
+    </p>
+    <i class="fas fa-money-bill-wave metric-icon"></i>
+</div>
 </div>
 
     <div class="charts-row">

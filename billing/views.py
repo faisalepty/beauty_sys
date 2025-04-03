@@ -12,6 +12,7 @@ from appointments.models import Appointment, TaskAssignment
 from customers.models import Customer
 from staff.models import Staff
 from services.models import Service, AdditionalTask
+from expense.models import Expense
 from .forms import BillingForm
 from decimal import Decimal
 from dateutil.relativedelta import relativedelta
@@ -20,6 +21,7 @@ import json
 from django.contrib.auth.decorators import user_passes_test 
 from django.http import HttpResponseForbidden # Import HttpResponseForbidden
 from django.contrib.auth.decorators import login_required
+
 
 def is_staff(user):
     return Staff.objects.filter(user=user).exists() or user.is_superuser
@@ -431,8 +433,10 @@ def get_revenue_and_profit_last_seven_months():
         total_revenue = Billing.objects.filter(
             created_at__range=(start_of_month, end_of_month)
         ).filter(appointment__status__in=['completed', 'transacted']).aggregate(total=Sum('total'))['total'] or 0
+        current_month_paid_expenses = Expense.objects.filter(
+        start_date__range=(start_of_month, end_of_month), is_paid=True).aggregate(total=Sum('amount'))['total'] or 0
 
-        total_profit = int(total_revenue) * 0.6
+        total_profit = (int(total_revenue) * 0.6) - int(current_month_paid_expenses)
 
         data.append({
             'month': start_of_month.strftime('%b'),
@@ -462,19 +466,22 @@ def calculate_percentage_change(current, previous):
     change = ((current - previous) / previous) * 100
     return round(change, 2)
 
-def dashboard(request):
-    if not request.user.is_authenticated and not is_staff_member(request.user):
-        return HttpResponseForbidden(render(request, 'permission_denied.html')) # Return 403 with error page.
 
+def dashboard(request):
+    # Permission check: Ensure user is authenticated and a staff member
+    if not request.user.is_authenticated or not is_staff_member(request.user):
+        return HttpResponseForbidden(render(request, 'permission_denied.html'))  # Return 403 with error page.
+
+    # Fetch all appointments with related customer, staff, and billing information
     appointments = Appointment.objects.select_related('customer', 'staff', 'billing').filter(
         status__in=['completed', 'transacted']
     )
-    for appointment in appointments:
-        print(appointment.service, appointment.customer, appointment.status, '\n \n \n', appointment.completion_percentage)
-
+    
+    # Fetch all staff and service data
     staff_list = Staff.objects.all()
     services = Service.objects.all()
 
+    # Date calculations for today, yesterday, and month-related periods
     today = timezone.now()
     start_of_day = timezone.make_aware(timezone.datetime.combine(today.date(), timezone.datetime.min.time()))
     end_of_day = timezone.make_aware(timezone.datetime.combine(today.date(), timezone.datetime.max.time()))
@@ -486,16 +493,21 @@ def dashboard(request):
     start_of_last_month = last_month.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
     end_of_last_month = start_of_month - timedelta(seconds=1)
 
+    # Current month's sales count
     current_month_sales = Billing.objects.filter(
         created_at__range=(start_of_month, end_of_day),
     ).count()
+    
+    # Last month's sales count
     last_month_sales = Billing.objects.filter(
         created_at__range=(start_of_last_month, end_of_last_month),
     ).count()
 
+    # Calculate the change in monthly sales and its absolute value
     monthly_sales_change = int(current_month_sales) - int(last_month_sales)
     monthly_sales_change_abs = abs(monthly_sales_change) if monthly_sales_change != 0 else 0
 
+    # Today's revenue and profit
     todays_revenue = Billing.objects.filter(
         created_at__range=(start_of_day, end_of_day), appointment__status='transacted'
     ).aggregate(total=Sum('total'))['total'] or 0
@@ -504,6 +516,7 @@ def dashboard(request):
         created_at__range=(start_of_day, end_of_day), status__in=['transacted', 'completed']
     ).count()
 
+    # Yesterday's revenue and profit
     yesterdays_revenue = Billing.objects.filter(
         created_at__range=(start_of_yesterday, end_of_yesterday), appointment__status='transacted'
     ).aggregate(total=Sum('total'))['total'] or 0
@@ -512,20 +525,65 @@ def dashboard(request):
         created_at__range=(start_of_yesterday, end_of_yesterday)
     ).count()
 
+
+
+
+       # Current month's expenses
+    current_month_paid_expenses = Expense.objects.filter(
+        start_date__range=(start_of_month, end_of_day),
+        is_paid=True
+    ).aggregate(total=Sum('amount'))['total'] or 0
+
+    current_month_unpaid_expenses = Expense.objects.filter(
+        start_date__range=(start_of_month, end_of_day),
+        is_paid=False
+    ).aggregate(total=Sum('amount'))['total'] or 0
+
+    # Last month's expenses
+    last_month_paid_expenses = Expense.objects.filter(
+        start_date__range=(start_of_last_month, end_of_last_month),
+        is_paid=True
+    ).aggregate(total=Sum('amount'))['total'] or 0
+
+    last_month_unpaid_expenses = Expense.objects.filter(
+        start_date__range=(start_of_last_month, end_of_last_month),
+        is_paid=False
+    ).aggregate(total=Sum('amount'))['total'] or 0
+
+    # Total expenses for the current month
+    total_current_month_expenses = current_month_paid_expenses + current_month_unpaid_expenses
+    total_last_month_expenses = last_month_paid_expenses + last_month_unpaid_expenses
+
+
+
+
+
+    # Current month revenue and profit
     current_month_revenue_g = Billing.objects.filter(
         created_at__range=(start_of_month, end_of_day),
     ).aggregate(total=Sum('total'))['total']
     current_month_revenue = int(current_month_revenue_g if current_month_revenue_g is not None else 0)
-    current_month_profit = round(Decimal(current_month_revenue) * Decimal('0.6'), 2) if current_month_revenue else 0
+    current_month_profit = round((Decimal(current_month_revenue) * Decimal('0.6')) - Decimal(current_month_paid_expenses), 2) if current_month_revenue else 0
 
+    # Last month revenue and profit
     last_month_revenue = Billing.objects.filter(
         created_at__range=(start_of_last_month, end_of_last_month),
     ).aggregate(total=Sum('total'))['total'] or 0
     last_month_profit = round(Decimal(last_month_revenue) * Decimal('0.6'), 2) if last_month_revenue else 0
 
+    # Total revenue and profit for all time
     total_revenue = Billing.objects.filter(appointment__status__in=['transacted', 'completed']).aggregate(total=Sum('total'))['total'] or 0
     total_profit = round(Decimal(total_revenue) * Decimal('0.6'), 2) if total_revenue else 0
     total_appointments = Appointment.objects.count()
+
+    # Percentage change calculations
+    def calculate_percentage_change(current_value, previous_value):
+        if previous_value == 0:
+            return 0
+        return ((current_value - previous_value) / previous_value) * 100
+
+
+
 
     todays_revenue_change = calculate_percentage_change(todays_revenue, yesterdays_revenue)
     todays_profit_change = calculate_percentage_change(todays_profit, yesterdays_profit)
@@ -533,13 +591,21 @@ def dashboard(request):
     current_month_revenue_change = calculate_percentage_change(current_month_revenue, last_month_revenue)
     current_month_profit_change = calculate_percentage_change(current_month_profit, last_month_profit)
     total_appointments_change = calculate_percentage_change(total_appointments, appointments_yesterday)
+    paid_expenses_change = calculate_percentage_change(current_month_paid_expenses, last_month_paid_expenses)
+    unpaid_expenses_change = calculate_percentage_change(current_month_unpaid_expenses, last_month_unpaid_expenses)
+    total_expenses_change = calculate_percentage_change(total_current_month_expenses, total_last_month_expenses)
 
+
+
+    # Appointment change data
     appointments_today_change = appointments_today - appointments_yesterday
     appointments_today_change_abs = abs(appointments_today_change) if appointments_today_change != 0 else 0
 
+    # Get additional data for revenue and service performance
     revenue_data = get_revenue_and_profit_last_seven_months()
     service_performance = get_service_performance()
 
+    # Render the dashboard page
     return render(request, 'reports/admin_dashboard.html', {
         'appointments': appointments,
         'staff_list': staff_list,
@@ -558,15 +624,24 @@ def dashboard(request):
         'revenue_data': revenue_data,
         'service_performance': service_performance,
         'd': 'd',
-        'todays_revenue_change': todays_revenue_change,
-        'todays_profit_change': todays_profit_change,
-        'appointments_today_change': appointments_today_change,
-        'appointments_today_change_abs': appointments_today_change_abs,
-        'total_revenue_change': total_revenue_change,
-        'current_month_revenue_change': current_month_revenue_change,
-        'current_month_profit_change': current_month_profit_change,
-        'total_appointments_change': total_appointments_change,
+        'todays_revenue_change': round(todays_revenue_change, 2),
+        'todays_profit_change': round(todays_profit_change, 2),
+        'appointments_today_change': round(appointments_today_change, 2),
+        'appointments_today_change_abs': round(appointments_today_change_abs, 2),
+        'total_revenue_change': round(total_revenue_change, 2),
+        'current_month_revenue_change': round(current_month_revenue_change, 2),
+        'current_month_profit_change': round(current_month_profit_change, 2),
+        'total_appointments_change': round(total_appointments_change, 2),
+
+        'current_month_paid_expenses': current_month_paid_expenses,
+        'current_month_unpaid_expenses': current_month_unpaid_expenses,
+        'paid_expenses_change': round(paid_expenses_change, 2),
+        'unpaid_expenses_change': round(unpaid_expenses_change, 2),
+        'total_current_month_expenses': total_current_month_expenses,
+        'paid_expenses_change_abs': abs(round(paid_expenses_change, 2)),
+        'total_expenses_change_abs': abs(round(total_expenses_change, 2)),
     })
+
 
 def sales_list(request):
     if not request.user.is_authenticated and not is_staff_member(request.user):
