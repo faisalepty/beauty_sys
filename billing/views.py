@@ -643,6 +643,7 @@ def dashboard(request):
     })
 
 
+
 def sales_list(request):
     if not request.user.is_authenticated and not is_staff_member(request.user):
         return HttpResponseForbidden(render(request, 'permission_denied.html')) # Return 403 with error page.
